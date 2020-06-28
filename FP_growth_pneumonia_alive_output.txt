@@ -1,0 +1,134 @@
+triadyn #SUP: 219
+oncologist #SUP: 221
+suffer #SUP: 222
+foci #SUP: 224
+olanzapin #SUP: 226
+option #SUP: 226
+bromid #SUP: 230
+prognosi #SUP: 234
+pronounc #SUP: 240
+clinician #SUP: 241
+mean #SUP: 242
+qtc #SUP: 244
+diaphoresi #SUP: 248
+phenylephrin #SUP: 250
+chip #SUP: 254
+gabapentin #SUP: 260
+motor #SUP: 277
+unstabl #SUP: 278
+dizzi #SUP: 282
+platelet #SUP: 285
+sensat #SUP: 291
+sweat #SUP: 293
+crrt #SUP: 295
+gait #SUP: 296
+incent #SUP: 298
+ardsnet #SUP: 299
+ipf #SUP: 303
+nectar #SUP: 304
+pea #SUP: 306
+arrest pea #SUP: 280
+habitu #SUP: 310
+anur #SUP: 312
+cvvh #SUP: 318
+commod #SUP: 322
+deterior #SUP: 322
+bottl #SUP: 335
+db #SUP: 341
+ctx #SUP: 355
+vasopressin #SUP: 359
+palli #SUP: 363
+readmit #SUP: 372
+omeprazol #SUP: 389
+wallet #SUP: 391
+wallet cash #SUP: 381
+wallet cash cloth #SUP: 380
+wallet cash jewelri #SUP: 380
+wallet cash cloth jewelri #SUP: 380
+wallet cash signatur #SUP: 380
+wallet cash signatur cloth #SUP: 380
+wallet cash signatur jewelri #SUP: 380
+wallet cash signatur cloth jewelri #SUP: 380
+money wallet cash #SUP: 380
+money wallet cash cloth #SUP: 380
+money wallet cash jewelri #SUP: 380
+money wallet cash cloth jewelri #SUP: 380
+money wallet cash signatur #SUP: 380
+money wallet cash signatur cloth #SUP: 380
+money wallet cash signatur jewelri #SUP: 380
+money wallet cash signatur cloth jewelri #SUP: 380
+wallet jewelri #SUP: 385
+wallet cloth jewelri #SUP: 385
+wallet cloth #SUP: 385
+wallet signatur #SUP: 387
+wallet signatur cloth #SUP: 385
+wallet signatur jewelri #SUP: 385
+wallet signatur cloth jewelri #SUP: 385
+money wallet #SUP: 388
+money wallet jewelri #SUP: 385
+money wallet cloth jewelri #SUP: 385
+money wallet cloth #SUP: 385
+money wallet signatur #SUP: 387
+money wallet signatur cloth #SUP: 385
+money wallet signatur jewelri #SUP: 385
+money wallet signatur cloth jewelri #SUP: 385
+video #SUP: 394
+scar #SUP: 402
+cash #SUP: 407
+cash cloth #SUP: 395
+cash jewelri #SUP: 395
+cash cloth jewelri #SUP: 395
+cash signatur #SUP: 395
+cash signatur cloth #SUP: 395
+cash signatur jewelri #SUP: 395
+cash signatur cloth jewelri #SUP: 395
+money cash #SUP: 395
+money cash cloth #SUP: 395
+money cash jewelri #SUP: 395
+money cash cloth jewelri #SUP: 395
+money cash signatur #SUP: 395
+money cash signatur cloth #SUP: 395
+money cash signatur jewelri #SUP: 395
+money cash signatur cloth jewelri #SUP: 395
+dic #SUP: 407
+money #SUP: 410
+money cloth #SUP: 400
+money signatur #SUP: 402
+money signatur cloth #SUP: 400
+money signatur jewelri #SUP: 400
+money signatur cloth jewelri #SUP: 400
+money jewelri #SUP: 403
+money cloth jewelri #SUP: 400
+signatur #SUP: 414
+signatur cloth #SUP: 406
+signatur jewelri #SUP: 401
+signatur cloth jewelri #SUP: 401
+jewelri #SUP: 415
+cloth jewelri #SUP: 401
+dopamin #SUP: 420
+wish #SUP: 420
+zyprexa #SUP: 442
+lift #SUP: 442
+paralyt #SUP: 460
+cloth #SUP: 485
+osa #SUP: 515
+captopril #SUP: 520
+seroquel #SUP: 542
+declin #SUP: 574
+norepinephrin #SUP: 583
+norepinephrin levoph #SUP: 365
+arrest #SUP: 589
+ambul #SUP: 623
+neo #SUP: 623
+hive #SUP: 723
+lat #SUP: 751
+dni #SUP: 818
+dnr dni #SUP: 654
+pleasant #SUP: 842
+mellitu #SUP: 946
+asthma #SUP: 1170
+chair #SUP: 1754
+chair oob #SUP: 1241
+oob #SUP: 1865
+dnr #SUP: 2005
+levoph #SUP: 2154
