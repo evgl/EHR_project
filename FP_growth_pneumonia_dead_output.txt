@@ -1,7 +1,7 @@
 video #SUP: 64
 aricept #SUP: 64
-recruit #SUP: 66
 profound #SUP: 66
+recruit #SUP: 66
 lotion #SUP: 68
 grave #SUP: 69
 ethic #SUP: 71
@@ -9,8 +9,8 @@ azotemia #SUP: 73
 dysynchron #SUP: 75
 gentamycin #SUP: 75
 suffer #SUP: 75
-deterior #SUP: 78
 vasopressor #SUP: 78
+deterior #SUP: 78
 readdress #SUP: 81
 priest #SUP: 81
 dead #SUP: 81
@@ -28,9 +28,9 @@ lat #SUP: 98
 ipf #SUP: 103
 clergi #SUP: 103
 clergi life #SUP: 65
-paralyt clergi #SUP: 72
+clergi paralyt #SUP: 72
 clergi mtg #SUP: 73
-paralyt clergi mtg #SUP: 71
+clergi paralyt mtg #SUP: 71
 oncologist #SUP: 104
 pronounc #SUP: 105
 neosynephrin #SUP: 111
@@ -42,7 +42,7 @@ levoph cardiovert #SUP: 81
 triadyn #SUP: 121
 bair #SUP: 122
 levoph bair #SUP: 72
-hugger bair #SUP: 96
+bair hugger #SUP: 96
 motil #SUP: 124
 hypotherm #SUP: 126
 levoph hypotherm #SUP: 67
@@ -87,8 +87,8 @@ arrest #SUP: 221
 arrest cpr #SUP: 87
 dic #SUP: 222
 dic ffp #SUP: 78
-dic norepinephrin #SUP: 93
-dic norepinephrin levoph #SUP: 67
+norepinephrin dic #SUP: 93
+norepinephrin dic levoph #SUP: 67
 dic levoph #SUP: 118
 oob #SUP: 226
 chair oob #SUP: 184
@@ -121,15 +121,15 @@ dnr prognosi #SUP: 97
 levoph prognosi #SUP: 107
 dni #SUP: 378
 dni levoph #SUP: 73
-dnr dni #SUP: 344
-dnr dni levoph #SUP: 70
+dni dnr #SUP: 344
+dni dnr levoph #SUP: 70
 neo #SUP: 389
 levoph neo #SUP: 140
 declin #SUP: 391
 norepinephrin declin #SUP: 73
 levoph declin #SUP: 94
 cmo #SUP: 402
-dnr cmo #SUP: 88
+cmo dnr #SUP: 88
 vasopressin #SUP: 483
 vasopressin dnr #SUP: 76
 vasopressin norepinephrin #SUP: 135
