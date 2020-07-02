@@ -1,3 +1,5 @@
 .vscode/settings.json
 .ipynb_checkpoints/read_csv_v0.1-checkpoint.ipynb
 .ipynb_checkpoints/read_csv-checkpoint.ipynb
+alive_df.csv
+dead_df.csv
