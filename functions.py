@@ -106,8 +106,8 @@ def count_notes_per_patient(disease_df):
                     
         patient_id = patient_id_check
                 
-    # patient_id_to_num_notes[patient_id] = note_counter
-    # del patient_id_to_num_notes[-1]
+    patient_id_to_num_notes[patient_id] = note_counter
+    del patient_id_to_num_notes[-1]
     return patient_id_to_num_notes
 
 def count_words_per_patient(disease_df, patient_id_to_num_notes):
@@ -120,8 +120,7 @@ def count_words_per_patient(disease_df, patient_id_to_num_notes):
     note_event_counter = 0
 
     # Iterate through each note
-    for index, row in tqdm(disease_df.iterrows(), total=disease_df.shape[0]):
-
+    for index, row in tqdm(disease_df.iterrows(), total=disease_df.shape[0]):     
         patient_id_check = int(row['SUBJECT_ID_x'])
     
         # if patient id has changed, end sequence and start new sequence
@@ -134,7 +133,6 @@ def count_words_per_patient(disease_df, patient_id_to_num_notes):
                     note_appearance_counter[word] += 1
                 else:
                     note_appearance_counter[word] = 1
-        
             # reset word_set
             word_set = set()
         
@@ -200,8 +198,23 @@ def find_frequent_word(note_appearance_counter, number_of_patients, n_fold, thre
                             break
             if freq_check:
                 frequent_word_lists[disease].append((word))
+
+    logger.info(f"Frequent word label_0: {len(frequent_word_lists['label_0'])}")
+    logger.info(f"Frequent word label_1: {len(frequent_word_lists['label_1'])}")
+
+    FREQUENT_WORD_LIST = frequent_word_lists['label_0'] + frequent_word_lists['label_1']
+
+    word_dict = {}
+    word_id = 1
+    stemmer = PorterStemmer()
+
+
+    for word in FREQUENT_WORD_LIST:
+        if not word == "WORD":
+            word_dict[stemmer.stem(word.strip())] = word_id
+            word_id += 1
     
-    return frequent_word_lists
+    return word_dict
 
 def find_cooc_per_patient(disease_df, word_dict, min_support, label):
     

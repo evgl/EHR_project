@@ -5,7 +5,7 @@ from functions import create_graph_list, PaddedGraphGenerator, train_fold, creat
 import json
 from nltk.stem import PorterStemmer
 from sklearn import model_selection
-"""
+
 # Variables
 
 # Input vars --->
@@ -20,6 +20,8 @@ note_appearance_counter = {}
 n_fold = float(3)
 threshold = float(0.02)
 frequent_word_lists = {}
+
+min_sup = 0.4
 # Input vars ---<
 
 # Save dataframe ------------------->
@@ -47,67 +49,52 @@ number_of_patients['label_1'], note_appearance_counter['label_1'] = count_words_
 
 # Step 4
 logger.info("Find frequent words...")
-frequent_word_lists = find_frequent_word(note_appearance_counter, number_of_patients, n_fold, threshold)
-logger.info(len(frequent_word_lists['label_0']))
-logger.info(len(frequent_word_lists['label_1']))
+word_dict = find_frequent_word(note_appearance_counter, number_of_patients, n_fold, threshold)
 
-with open('frequent_word_lists.json', 'w') as fp:
-    json.dump(frequent_word_lists, fp)
-"""
+
+# Write json
+# with open('frequent_word_lists.json', 'w') as fp:
+#     json.dump(frequent_word_lists, fp)
+
 # TODO: Step 2-4 can be merged into one
 
+# Read json
+# with open('frequent_word_lists.json') as f:
+#     frequent_word_lists = json.load(f)
 
-with open('frequent_word_lists.json') as f:
-    frequent_word_lists = json.load(f)
-
-# TODO: Later can be done inside the find_frequent_word function
-FREQUENT_WORD_LIST = frequent_word_lists['label_0'] + frequent_word_lists['label_1']
-
-word_dict = {}
-word_id = 1
-stemmer = PorterStemmer()
-
-
-for word in FREQUENT_WORD_LIST:
-    if not word == "WORD":
-        word_dict[stemmer.stem(word.strip())] = word_id
-        word_id += 1
-             
-alive_df = pd.read_csv('alive_df.csv')
-dead_df = pd.read_csv('dead_df.csv')
-
-min_sup = 0.4
-
+# Step 5
 lable_0_cooc_df = find_cooc_per_patient(dead_df, word_dict, min_sup, -1)
 lable_1_cooc_df = find_cooc_per_patient(alive_df, word_dict, min_sup, 1)
 
-print(lable_0_cooc_df)
-
+# Step 6
 # Train model
 graphs = []
 labels = []
 features = []
 
-graph_1, label_1 = create_graph_list(lable_0_cooc_df)
-graph_2, label_2 = create_graph_list(lable_1_cooc_df)
+graph_0, label_0 = create_graph_list(lable_0_cooc_df)
+graph_1, label_1 = create_graph_list(lable_1_cooc_df)
+
+logger.info(f"graphs_0: {len(graph_0)}, labels_0: {len(label_0)}")
+logger.info(f"graph_1: {len(graph_1)}, labels_1: {len(label_1)}")
+
+graphs.extend(graph_0)
+labels.extend(label_0)
 
 graphs.extend(graph_1)
 labels.extend(label_1)
-print(f"graphs: {len(graphs)}, labels: {len(labels)}")
-graphs.extend(graph_2)
-labels.extend(label_2)
-print(f"graphs: {len(graphs)}, labels: {len(labels)}")
-print(f"\n{graphs[0].info()}")
-print(f"\n{graphs[1].info()}")
+
+logger.info(f"graphs: {len(graphs)}, labels: {len(labels)}")
+logger.info(f"graph info:\n{graphs[0].info()}")
+
 
 summary = pd.DataFrame(
     [(g.number_of_nodes(), g.number_of_edges()) for g in graphs],
     columns=["nodes", "edges"],
 )
-print(f"\n{summary.describe().round(1)}")
+logger.info(f"Summary:\n{summary.describe().round(1)}")
 
 graph_labels = pd.Series(labels)
-print(graph_labels.value_counts().to_frame())
 graph_labels = pd.get_dummies(graph_labels, drop_first=True)
 generator = PaddedGraphGenerator(graphs=graphs)
 
@@ -123,7 +110,7 @@ stratified_folds = model_selection.RepeatedStratifiedKFold(
 ).split(graph_labels, graph_labels)
 
 for i, (train_index, test_index) in enumerate(stratified_folds):
-    print(f"Training and evaluating on fold {i+1} out of {folds * n_repeats}...")
+    logger.info(f"Training and evaluating on fold {i+1} out of {folds * n_repeats}...")
     train_gen, test_gen = get_generators(
         generator, train_index, test_index, graph_labels, batch_size=30
     )
@@ -132,4 +119,4 @@ for i, (train_index, test_index) in enumerate(stratified_folds):
     history, acc = train_fold(model, train_gen, test_gen, epochs)
     test_accs.append(acc)
 
-print(f"Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
+logger.info(f"Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
