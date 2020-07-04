@@ -1,8 +1,9 @@
 import pandas as pd
 import numpy as np
+import json
+import tensorflow as tf
 from functions import extract_data, count_notes_per_patient, logger, count_words_per_patient, find_frequent_word, find_cooc_per_patient
 from functions import create_graph_list, PaddedGraphGenerator, train_fold, create_graph_classification_model, get_generators
-import json
 from nltk.stem import PorterStemmer
 from sklearn import model_selection
 
@@ -21,7 +22,7 @@ n_fold = float(3)
 threshold = float(0.01)
 frequent_word_lists = {}
 
-min_sup = 0.7
+min_sup = 0.03
 # Input vars ---<
 
 # Save dataframe ------------------->
@@ -97,6 +98,19 @@ logger.info(f"Summary:\n{summary.describe().round(1)}")
 graph_labels = pd.Series(labels)
 graph_labels = pd.get_dummies(graph_labels, drop_first=True)
 generator = PaddedGraphGenerator(graphs=graphs)
+
+logger.info(f"Num GPUs Available: {len(tf.config.experimental.list_physical_devices('GPU'))}")
+
+gpus = tf.config.experimental.list_physical_devices('GPU')
+if gpus:
+  # Restrict TensorFlow to only use the first GPU
+  try:
+    tf.config.experimental.set_visible_devices(gpus[1], 'GPU')
+    logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+    logger.info(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPU")
+  except RuntimeError as e:
+    # Visible devices must be set before GPUs have been initialized
+    logger.info(e)
 
 # Train the model
 epochs = 200  # maximum number of training epochs
