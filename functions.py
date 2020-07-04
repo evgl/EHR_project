@@ -321,14 +321,12 @@ def find_cooc_per_patient(disease_df, word_dict, min_support, label):
             cooc_feature_tmp.append(min_sup)
             cooc_feature_idx_tmp.append(word)
             cooc_log_odds_ratio_tmp.append(math.log(min_sup/((1-min_sup) + 0.0001)))
-    #-----
-            
-    for index, row in df_itemsets.iterrows():
+
         if len(row['itemsets']) == 2:
-            cooc_tmp.append(row['itemsets'])
+            cooc_ = list(row['itemsets'])
+            cooc_tmp.append(cooc_)
             cooc_minsup_tmp.append(row['support'])
                     
-            
     # Update glob lists
     patient_id_lst.append(patient_id)
     patient_cooc_lst.append(cooc_tmp)

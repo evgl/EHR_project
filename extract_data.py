@@ -18,10 +18,10 @@ number_of_patients = {}
 note_appearance_counter = {}
 
 n_fold = float(3)
-threshold = float(0.02)
+threshold = float(0.01)
 frequent_word_lists = {}
 
-min_sup = 0.4
+min_sup = 0.7
 # Input vars ---<
 
 # Save dataframe ------------------->
