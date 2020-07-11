@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import json
 import tensorflow as tf
+import matplotlib.pyplot as plt
 from functions import extract_data, count_notes_per_patient, logger, count_words_per_patient, find_frequent_word, find_cooc_per_patient
 from functions import create_graph_list, PaddedGraphGenerator, train_fold, create_graph_classification_model, get_generators
 from nltk.stem import PorterStemmer
@@ -22,7 +23,7 @@ n_fold = float(3)
 threshold = float(0.01)
 frequent_word_lists = {}
 
-min_sup = 0.03
+min_sup = 0.01
 # Input vars ---<
 
 # Save dataframe ------------------->
@@ -134,3 +135,10 @@ for i, (train_index, test_index) in enumerate(stratified_folds):
     test_accs.append(acc)
 
 logger.info(f"Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
+
+# plt.figure(figsize=(8, 6))
+# plt.hist(test_accs)
+# plt.xlabel("Accuracy")
+# plt.ylabel("Count")
+# plt.savefig('result_chart.png')
+#plt.show()
