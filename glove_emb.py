@@ -90,8 +90,7 @@ glove = Glove(no_components=128, learning_rate=0.05)
 glove.fit(corpus.matrix, epochs=1, no_threads=4, verbose=True)
 glove.add_dictionary(corpus.dictionary)
 glove.save('glove.model')
-
-glove = Glove.load('glove.model')
+# glove = Glove.load('glove.model')
 
 # Create np.array only for set of patient nodes
 emb_list = []
