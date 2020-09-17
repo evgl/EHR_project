@@ -23,7 +23,7 @@ from stellargraph import StellarGraph
 from sklearn import model_selection
 from IPython.display import display, HTML
 
-from gensim.models import Word2Vec
+from gensim.models import Word2Vec, FastText
 from stellargraph.data import BiasedRandomWalk
 
 from tensorflow.keras import Model
@@ -33,6 +33,8 @@ from tensorflow.keras.losses import binary_crossentropy
 from tensorflow.keras.callbacks import EarlyStopping
 import tensorflow as tf
 import matplotlib.pyplot as plt
+
+from glove import Corpus, Glove
 
 
 logger = logging.getLogger()
@@ -374,7 +376,7 @@ def cooc_log_odd_score(patient_cooc_0, patient_cooc_1):
     patient_cooc_0_dict = {}
     patient_cooc_1_dict = {}
 
-    for k, v in patient_cooc_0.items():
+    for _, v in patient_cooc_0.items():
         for item in v:
             patient_cooc_set.add(item)
             if item not in patient_cooc_0_dict:
@@ -423,8 +425,9 @@ def cooc_log_odd_score(patient_cooc_0, patient_cooc_1):
 
     return normalized_cooc_odd_scores
 
-
-def train_embeddings(patient_node_0, patient_node_1, new_patient_cooc_odd_scores):
+""" Embeddings: Seq2Vec, Seq2Vec not weighted, Word2Vec, FastText, GloVe
+"""
+def sequence2vec(patient_node_0, patient_node_1, new_patient_cooc_odd_scores, weighted = True):
 
     # Get unique patient nodes
     patient_node_set = set()
@@ -475,7 +478,7 @@ def train_embeddings(patient_node_0, patient_node_1, new_patient_cooc_odd_scores
         n=10,  # number of random walks per root node
         p=0.5,  # Defines (unormalised) probability, 1/p, of returning to source node
         q=2.0,  # Defines (unormalised) probability, 1/q, for moving away from source node
-        weighted=True,  # for weighted random walks
+        weighted=weighted,  # for weighted random walks
         seed=42,  # random seed fixed for reproducibility
     )
     logger.info("Number of random walks: {}".format(len(weighted_walks_patient_bidirect)))
@@ -493,6 +496,112 @@ def train_embeddings(patient_node_0, patient_node_1, new_patient_cooc_odd_scores
             print(f"index: {index} is already in a dictionary!")
 
     return patient_weighted_node_emb_dict
+
+
+def other_emb (alive_df, dead_df, patient_node_0, patient_node_1):
+    """ Function to train word2vec embeddings
+    
+    Arguments:
+        alive_df (pandas dataframe): Pandas dataframe containing all notes for alive labeled patients
+        dead_df (pandas dataframe): Pandas dataframe containing all notes for dead labeled patients
+
+    Returns:
+        dictionary of embeddings (string : nparray): Dictionary structure "key word" : vector
+    """
+
+    # Combine all notes
+    all_notes_df = pd.concat([alive_df, dead_df])
+
+    # Pre-process the notes
+    text_lines = list()
+    lines = all_notes_df['TEXT'].values.tolist()
+
+    # words that do not have meaning (can be modified later)
+    USELESS_WORDS = ["a", "the", "he", "she", ",", ".", "?", "!", ":", ";", "+", "*", "**"\
+                    "your", "you"]
+
+    # count up the frequency of every word in every disease file
+    stemmer = PorterStemmer()
+    # create set of words to ignore in text
+    stop_words = set(stopwords.words('english'))
+
+    for word in USELESS_WORDS:
+        stop_words.add(word)
+
+    for line in tqdm(lines):
+    
+        line = re.sub(r'\[\*\*(.*?)\*\*\]|[_,\d\*:~=\.\-\+\\/]+', ' ', line)
+        tokens = word_tokenize(line)
+        words = [stemmer.stem(word.lower()) for word in tokens]
+        # filter out stop words
+        words = [w for w in words if not w in stop_words]
+    
+        text_lines.append(words)
+        
+    # train word2vec model
+    Word2Vec_model = Word2Vec(sentences=text_lines, size=128, window=5, min_count=0, sg=1, workers=4, iter=1)
+    logger.info("Finished training word2vec model...")
+    # train fasttext model
+    FastText_model = FastText(sentences=text_lines, size=128, window=5, min_count=0, sg=1, workers=4, iter=1)
+    logger.info("Finished training FastText model...")
+    
+    # train glove model
+    # creating a corpus object
+    corpus = Corpus() 
+    #training the corpus to generate the co occurence matrix which is used in GloVe
+    corpus.fit(text_lines, window=5)
+    # Creating a Glove object which will use the matrix created in the above lines to create embeddings
+    # We can set the learning rate as it uses Gradient Descent and number of components
+
+    # Train glove embeddings
+    glove = Glove(no_components=128, learning_rate=0.05)
+ 
+    glove.fit(corpus.matrix, epochs=1, no_threads=4, verbose=True)
+    glove.add_dictionary(corpus.dictionary)
+    logger.info("Finished training glove model...")
+
+    # Create a dictionary only for set of patient nodes
+
+    # Leave only unique values
+    patient_node_set = set()
+
+    for _, v in patient_node_0.items():
+        for item in v:
+            patient_node_set.add(item)
+    
+    for _, v in patient_node_1.items():
+        for item in v:
+            patient_node_set.add(item)
+
+    # create a dictionary for word2vec
+    word2vec_emb = {}
+    for node in tqdm(list(patient_node_set)):
+        if node not in word2vec_emb:
+            word2vec_emb[node] = Word2Vec_model.wv[node]
+        else:
+            logger.info(f"node: {node} is already in the word2vec_emb dictionary!")
+
+    # create a dictionary for fasttext
+    fasttext_emb = {}
+    for node in tqdm(list(patient_node_set)):
+        if node not in fasttext_emb:
+            fasttext_emb[node] = FastText_model.wv[node]
+        else:
+            logger.info(f"node: {node} is already in the fasttext_emb dictionary!")
+
+    # create a dictionary for glove
+    glove_emb = {}
+    for node in tqdm(list(patient_node_set)):
+        if node not in glove_emb:
+            glove_emb[node] = glove.word_vectors[glove.dictionary[node]]
+        else:
+            logger.info(f"node: {node} is already in the glove dictionary!")
+
+    return word2vec_emb, fasttext_emb, glove_emb
+
+""" Embeddings: Seq2Vec, Word2Vec, FastText, GloVe
+    -- End --
+"""
 
 # Train model
 # Load data

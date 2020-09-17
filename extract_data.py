@@ -4,7 +4,7 @@ import json
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from functions import extract_data, count_notes_per_patient, logger, count_words_per_patient, find_frequent_word, find_cooc_per_patient
-from functions import cooc_log_odd_score, train_embeddings
+from functions import cooc_log_odd_score, sequence2vec, other_emb
 from functions import create_graphs_lists, train_model
 from nltk.stem import PorterStemmer
 from sklearn import model_selection
@@ -77,7 +77,8 @@ normalized_cooc_odd_scores = cooc_log_odd_score(patient_cooc_0, patient_cooc_1)
 
 # Step 7
 logger.info("Train embeddings...")
-sequence2vec = train_embeddings(patient_node_0, patient_node_1, normalized_cooc_odd_scores)
+word2vec_emb, fasttext_emb, glove_emb = other_emb(alive_df, dead_df, patient_node_0, patient_node_1)
+sequence2vec = sequence2vec(patient_node_0, patient_node_1, normalized_cooc_odd_scores)
 
 # Step 8
 # Create graphs, graph labels, train and test data
