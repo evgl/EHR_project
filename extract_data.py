@@ -3,6 +3,7 @@ import numpy as np
 import json
 import tensorflow as tf
 import matplotlib.pyplot as plt
+import functions
 from functions import extract_data, count_notes_per_patient, logger, count_words_per_patient, find_frequent_word, find_cooc_per_patient
 from functions import cooc_log_odd_score, sequence2vec, other_emb
 from functions import create_graphs_lists, train_model
@@ -73,42 +74,88 @@ patient_node_1, patient_cooc_1, patient_note_num_1 = find_cooc_per_patient(alive
 
 # Step 6
 logger.info("Get and normalize weights in co-occurrences...")
-normalized_cooc_odd_scores = cooc_log_odd_score(patient_cooc_0, patient_cooc_1)
+normalized_cooc_odd_scores = cooc_log_odd_score(patient_cooc_0, patient_cooc_1, )
 
 # Step 7
 logger.info("Train embeddings...")
 word2vec_emb, fasttext_emb, glove_emb = other_emb(alive_df, dead_df, patient_node_0, patient_node_1)
-sequence2vec = sequence2vec(patient_node_0, patient_node_1, normalized_cooc_odd_scores)
+# sequence2vec = sequence2vec(patient_node_0, patient_node_1, normalized_cooc_odd_scores)
+# sequence2vec_notWeighted = functions.sequence2vec(patient_node_0, patient_node_1, normalized_cooc_odd_scores, weighted=False)
 
-# Step 8
-# Create graphs, graph labels, train and test data
+# print(f"word2vec_emb of cmo:\n {word2vec_emb['cmo']}")
+# print(f"fasttext_emb of cmo:\n {fasttext_emb['cmo']}")
+# print(f"glove_emb of cmo:\n {glove_emb['cmo']}")
+# print(f"sequence2vec of cmo:\n {sequence2vec['cmo']}")
+# print(f"sequence2vec_notWeighted of cmo:\n {sequence2vec_notWeighted['cmo']}")
+
+
+# # Step 8
+# # Create graphs, graph labels, train and test data
+# logger.info("Create graphs, graph labels, train and test data...")
+# graphs, graph_labels, train_index, test_index = create_graphs_lists(patient_cooc_0, patient_cooc_1, normalized_cooc_odd_scores, sequence2vec)
+# # -------------------
+
+# # Step 9
+# # Train model
+# logger.info("Train model...")
+
+# test_accs = train_model(graphs, graph_labels, train_index, test_index)
+
+# logger.info(f"Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
+
+"""Train other embeddings"""
+logger.info("Train other embeddings word2vec_emb...")
 logger.info("Create graphs, graph labels, train and test data...")
-graphs, graph_labels, train_index, test_index = create_graphs_lists(patient_cooc_0, patient_cooc_1, normalized_cooc_odd_scores, sequence2vec)
-# -------------------
-
-# Step 9
-# Train model
+graphs, graph_labels, train_index, test_index = create_graphs_lists(patient_cooc_0, patient_cooc_1, normalized_cooc_odd_scores, word2vec_emb)
 logger.info("Train model...")
-
 test_accs = train_model(graphs, graph_labels, train_index, test_index)
+logger.info(f"word2vec_emb Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
 
-logger.info(f"Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
+logger.info("Train other embeddings fasttext_emb...")
+logger.info("Create graphs, graph labels, train and test data...")
+graphs, graph_labels, train_index, test_index = create_graphs_lists(patient_cooc_0, patient_cooc_1, normalized_cooc_odd_scores, fasttext_emb)
+logger.info("Train model...")
+test_accs = train_model(graphs, graph_labels, train_index, test_index)
+logger.info(f"fasttext_emb Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
 
-# plt.figure(figsize=(8, 6))
-# plt.hist(test_accs)
-# plt.xlabel("Accuracy")
-# plt.ylabel("Count")
-# plt.savefig('result_chart.png')
-#plt.show()
+logger.info("Train other embeddings glove_emb...")
+logger.info("Create graphs, graph labels, train and test data...")
+graphs, graph_labels, train_index, test_index = create_graphs_lists(patient_cooc_0, patient_cooc_1, normalized_cooc_odd_scores, glove_emb)
+logger.info("Train model...")
+test_accs = train_model(graphs, graph_labels, train_index, test_index)
+logger.info(f"glove_emb Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
 
-# TODO: Divide patients into two datasets before creaing a word dictionary
-# Do the embedding comparison with other embedding algorithms like
-# word2vec, elmo, bert, fasttext and etc.
+# # plt.figure(figsize=(8, 6))
+# # plt.hist(test_accs)
+# # plt.xlabel("Accuracy")
+# # plt.ylabel("Count")
+# # plt.savefig('result_chart.png')
+# #plt.show()
 
-# Weighted random walk model
-# 78.7% and std: 2.1%
-# 79.4% and std: 2.4%
+# # TODO: Divide patients into two datasets before creaing a word dictionary
+# # Do the embedding comparison with other embedding algorithms like
+# # word2vec, elmo, bert, fasttext and etc.
 
-# Not weighted random walk model
-# 78.5% and std: 5.2%
-# 78.9% and std: 3.4%
+
+
+
+"""Seq2Vec"""
+# # Weighted random walk model
+# # 78.7% and std: 2.1%
+# # 79.4% and std: 2.4%
+
+# # Not weighted random walk model
+# # 78.5% and std: 5.2%
+# # 78.9% and std: 3.4%
+
+"""Word2Vec"""
+# 59.3% and std: 1e+01%
+# 59.2% and std: 1e+01%
+
+"""FastText"""
+# 56.8% and std: 8.3%
+# 56.6% and std: 7.9%
+
+"""Glove"""
+# 71.1% and std: 7.2%
+# 70.2% and std: 8.5%

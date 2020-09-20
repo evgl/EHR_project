@@ -1,5 +1,5 @@
-glove_python 0.1.0
-pip install glove_python
+pip install glove_python=0.1.0
 pip install stellargraph[demos]==1.2.1
 pip install nltk = 3.5
 pip install mlxtend=0.17.3
+pip install biobert-embedding=0.1.2

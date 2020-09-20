@@ -4,3 +4,9 @@
 *.csv
 *.png
 *.json
+glove.model
+*.txt
+*.bin
+*.gz
+*.pyc
+app.log
