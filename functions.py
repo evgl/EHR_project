@@ -670,7 +670,7 @@ def create_graphs_lists(patient_cooc_0, patient_cooc_1, normalized_cooc_odd_scor
 
     test_arr = []
     train_arr = []
-    for i, v in enumerate(graphs):
+    for i, _ in enumerate(graphs):
         # Take first items for neg set
         if i < test_cnt:
             test_arr.append(i)    
