@@ -14,6 +14,7 @@ from collections import defaultdict
 from tqdm import tqdm
 from mlxtend.frequent_patterns import fpgrowth
 from mlxtend.preprocessing import TransactionEncoder
+from pathlib import Path
 
 import stellargraph as sg
 from stellargraph.mapper import PaddedGraphGenerator
@@ -221,7 +222,9 @@ def find_frequent_word(note_appearance_counter, number_of_patients, n_fold, thre
     return word_dict
 
 def find_cooc_per_patient(disease_df, word_dict, min_support):
-    """ Function counts co-occurences per each patient
+    """ Function counts co-occurences per each patient. 
+    Input is a list of notes for each patient. Each item of the list
+    is a tokenized note.
 
     Arguments:
         disease_df: Desease dataframe without discharge notes
@@ -703,7 +706,13 @@ def create_graphs_lists(patient_cooc_0, patient_cooc_1, normalized_cooc_odd_scor
 
     return graphs, graph_labels, train_index, test_index
 
-def train_model(graphs, graph_labels, train_index, test_index):
+def train_model(graphs, graph_labels, train_index, test_index, model_name, disease_name):
+    # Save model path --------------->
+    # save_model_path = os.path.join("data/models/", disease_name)
+    # # Create a path to save the model
+    # create_model_path = os.path.join(save_model_path, model_name)
+    # Path(create_model_path).mkdir(parents=True, exist_ok=True)
+    # Save model path ---------------<
 
     # Initialize generator
     generator = PaddedGraphGenerator(graphs=graphs)
@@ -734,14 +743,17 @@ def train_model(graphs, graph_labels, train_index, test_index):
     
 
     # To train in folds
-    def _train_fold(model, train_gen, test_gen, es, epochs):
+    def _train_fold(model, train_gen, test_gen, es, epochs, fold):
         model.fit(
             train_gen, epochs=epochs, validation_data=test_gen, verbose=0, callbacks=[es],
         )
         # calculate performance on the test data and return along with history
         test_metrics = model.evaluate(test_gen, verbose=0)
         test_acc = test_metrics[model.metrics_names.index("acc")]
-
+        # # save model / If want to say each model
+        # save_model_name = model_name  + "_" + str(fold) + ".h5"
+        # fold_model_path = os.path.join(save_model_path, model_name, save_model_name)
+        # model.save(fold_model_path)
         return test_acc
 
     # To train in folds
@@ -773,14 +785,18 @@ def train_model(graphs, graph_labels, train_index, test_index):
     test_accs = []
 
     for i in range(50):
-        print(f"Training and evaluating on fold {i+1}...")
+        fold = i + 1
+        print(f"Training and evaluating on fold {fold}...")
     
         train_gen, test_gen = _get_generators(
             train_index, test_index, graph_labels, batch_size=30
         )
 
         model = _create_graph_classification_model(generator)
-        acc  = _train_fold(model, train_gen, test_gen, es, epochs)
+        acc  = _train_fold(model, train_gen, test_gen, es, epochs, fold)
         test_accs.append(acc)
-
+        # # Save model accuracy of each fold
+        # model_accuracies_file = model_name + ".txt"
+        # with open(os.path.join(save_model_path, model_accuracies_file), 'w') as f:
+        #     f.write(json.dumps(test_accs))
     return test_accs

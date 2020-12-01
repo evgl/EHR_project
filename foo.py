@@ -1,27 +1,31 @@
-import pandas as pd
+import json
+import os
 import numpy as np
 
-import stellargraph as sg
-from stellargraph.mapper import PaddedGraphGenerator
-from stellargraph.layer import GCNSupervisedGraphClassification
-from stellargraph import StellarGraph
+# Count accuraccies for the models
+path = "./data/models/PNEUMONIA/"
 
-from stellargraph import datasets
+_file = os.path.join(path, "seq2vec.txt")
+with open(_file, 'r') as f:
+    test_accs = json.loads(f.read())
+print(f"seq2vec Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
 
-from sklearn import model_selection
-from IPython.display import display, HTML
+_file = os.path.join(path, "sequence2vec_notWeighted.txt")
+with open(_file, 'r') as f:
+    test_accs = json.loads(f.read())
+print(f"sequence2vec_notWeighted Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
 
-from tensorflow.keras import Model
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.layers import Dense
-from tensorflow.keras.losses import binary_crossentropy
-from tensorflow.keras.callbacks import EarlyStopping
-import tensorflow as tf
-import matplotlib.pyplot as plt
+_file = os.path.join(path, "word2vec.txt")
+with open(_file, 'r') as f:
+    test_accs = json.loads(f.read())
+print(f"word2vec Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
 
+_file = os.path.join(path, "fasttext.txt")
+with open(_file, 'r') as f:
+    test_accs = json.loads(f.read())
+print(f"fasttext_emb Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
 
-import math
-print("Let's start coding!")
-
-n = math.log(0.1/(1-0.1))
-print(n)
+_file = os.path.join(path, "glove.txt")
+with open(_file, 'r') as f:
+    test_accs = json.loads(f.read())
+print(f"glove Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")

@@ -79,8 +79,8 @@ normalized_cooc_odd_scores = cooc_log_odd_score(patient_cooc_0, patient_cooc_1, 
 # Step 7
 logger.info("Train embeddings...")
 word2vec_emb, fasttext_emb, glove_emb = other_emb(alive_df, dead_df, patient_node_0, patient_node_1)
-# sequence2vec = sequence2vec(patient_node_0, patient_node_1, normalized_cooc_odd_scores)
-# sequence2vec_notWeighted = functions.sequence2vec(patient_node_0, patient_node_1, normalized_cooc_odd_scores, weighted=False)
+sequence2vec = sequence2vec(patient_node_0, patient_node_1, normalized_cooc_odd_scores)
+sequence2vec_notWeighted = functions.sequence2vec(patient_node_0, patient_node_1, normalized_cooc_odd_scores, weighted=False)
 
 # print(f"word2vec_emb of cmo:\n {word2vec_emb['cmo']}")
 # print(f"fasttext_emb of cmo:\n {fasttext_emb['cmo']}")
@@ -89,40 +89,45 @@ word2vec_emb, fasttext_emb, glove_emb = other_emb(alive_df, dead_df, patient_nod
 # print(f"sequence2vec_notWeighted of cmo:\n {sequence2vec_notWeighted['cmo']}")
 
 
-# # Step 8
-# # Create graphs, graph labels, train and test data
-# logger.info("Create graphs, graph labels, train and test data...")
-# graphs, graph_labels, train_index, test_index = create_graphs_lists(patient_cooc_0, patient_cooc_1, normalized_cooc_odd_scores, sequence2vec)
-# # -------------------
+# Step 8
+# Create graphs, graph labels, train and test data
+logger.info("Create graphs, graph labels, train and test data...")
+graphs, graph_labels, train_index, test_index = create_graphs_lists(patient_cooc_0, patient_cooc_1, normalized_cooc_odd_scores, sequence2vec)
+# -------------------
 
-# # Step 9
-# # Train model
-# logger.info("Train model...")
-
-# test_accs = train_model(graphs, graph_labels, train_index, test_index)
-
-# logger.info(f"Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
+# Step 9
+# Train model
+logger.info("Train model...")
+test_accs = train_model(graphs, graph_labels, train_index, test_index, "seq2vec", disease_name)
+logger.info(f"Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
 
 """Train other embeddings"""
+logger.info("Train other embeddings sequence2vec_notWeighted...")
+logger.info("Create graphs, graph labels, train and test data...")
+graphs, graph_labels, train_index, test_index = create_graphs_lists(patient_cooc_0, patient_cooc_1, normalized_cooc_odd_scores, sequence2vec_notWeighted)
+logger.info("Train model...")
+test_accs = train_model(graphs, graph_labels, train_index, test_index, "sequence2vec_notWeighted", disease_name)
+logger.info(f"sequence2vec_notWeighted Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
+
 logger.info("Train other embeddings word2vec_emb...")
 logger.info("Create graphs, graph labels, train and test data...")
 graphs, graph_labels, train_index, test_index = create_graphs_lists(patient_cooc_0, patient_cooc_1, normalized_cooc_odd_scores, word2vec_emb)
 logger.info("Train model...")
-test_accs = train_model(graphs, graph_labels, train_index, test_index)
+test_accs = train_model(graphs, graph_labels, train_index, test_index, "word2vec", disease_name)
 logger.info(f"word2vec_emb Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
 
 logger.info("Train other embeddings fasttext_emb...")
 logger.info("Create graphs, graph labels, train and test data...")
 graphs, graph_labels, train_index, test_index = create_graphs_lists(patient_cooc_0, patient_cooc_1, normalized_cooc_odd_scores, fasttext_emb)
 logger.info("Train model...")
-test_accs = train_model(graphs, graph_labels, train_index, test_index)
+test_accs = train_model(graphs, graph_labels, train_index, test_index, "fasttext", disease_name)
 logger.info(f"fasttext_emb Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
 
 logger.info("Train other embeddings glove_emb...")
 logger.info("Create graphs, graph labels, train and test data...")
 graphs, graph_labels, train_index, test_index = create_graphs_lists(patient_cooc_0, patient_cooc_1, normalized_cooc_odd_scores, glove_emb)
 logger.info("Train model...")
-test_accs = train_model(graphs, graph_labels, train_index, test_index)
+test_accs = train_model(graphs, graph_labels, train_index, test_index, "glove", disease_name)
 logger.info(f"glove_emb Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
 
 # # plt.figure(figsize=(8, 6))

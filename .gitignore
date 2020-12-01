@@ -18,4 +18,4 @@ glove.6B/6B.100.dat/meta/sizes
 glove.6B/6B.100.dat/meta/storage
 .ipynb_checkpoints/other_embeddings-checkpoint.ipynb
 *.pyc
-
+/data/
