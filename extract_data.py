@@ -67,20 +67,58 @@ with open('word_dict.json', 'r') as fp:
     word_dict = json.load(fp)
 
 
-# Step 5
-logger.info("Count co-occurrences per patient...")
-patient_node_0, patient_cooc_0, patient_note_num_0 = find_cooc_per_patient(dead_df, word_dict, 0.15)
-patient_node_1, patient_cooc_1, patient_note_num_1 = find_cooc_per_patient(alive_df, word_dict, 0.15)
+# # Step 5
+# logger.info("Count co-occurrences per patient...")
+# patient_node_0, patient_cooc_0, patient_note_num_0 = find_cooc_per_patient(dead_df, word_dict, 0.15)
+# patient_node_1, patient_cooc_1, patient_note_num_1 = find_cooc_per_patient(alive_df, word_dict, 0.15)
 
-# Step 6
-logger.info("Get and normalize weights in co-occurrences...")
-normalized_cooc_odd_scores = cooc_log_odd_score(patient_cooc_0, patient_cooc_1, )
+# # Write json
+# with open('patient_node_0.json', 'w') as fp:
+#     json.dump(patient_node_0, fp)
+# with open('patient_node_1.json', 'w') as fp:
+#     json.dump(patient_node_1, fp)
+
+# # Because key is a tuple we store it as a string
+# with open(r'patient_cooc_0.txt','w+') as f:
+#     f.write(str(patient_cooc_0))
+# with open(r'patient_cooc_1.txt','w+') as f:
+#     f.write(str(patient_cooc_1))
+
+# Read json
+with open('patient_node_0.json', 'r') as fp:
+    patient_node_0 = json.load(fp)
+with open('patient_node_1.json', 'r') as fp:
+    patient_node_1 = json.load(fp)
+# Read txt with tuples
+dic = ''
+with open(r'patient_cooc_0.txt','r') as f:
+         for i in f.readlines():
+            dic=i #string
+patient_cooc_0 = eval(dic) # this is orignal dict with instace dict
+dic = ''
+with open(r'patient_cooc_1.txt','r') as f:
+         for i in f.readlines():
+            dic=i #string
+patient_cooc_1 = eval(dic) # this is orignal dict with instace dict
+
+# # Step 6
+# logger.info("Get and normalize weights in co-occurrences...")
+# normalized_cooc_odd_scores = cooc_log_odd_score(patient_cooc_0, patient_cooc_1, )
+
+# with open(r'normalized_cooc_odd_scores.txt','w+') as f:
+#    f.write(str(normalized_cooc_odd_scores))
+
+dic = ''
+with open(r'normalized_cooc_odd_scores.txt','r') as f:
+         for i in f.readlines():
+            dic=i #string
+normalized_cooc_odd_scores = eval(dic) # this is orignal dict with instace dict
 
 # Step 7
 logger.info("Train embeddings...")
-word2vec_emb, fasttext_emb, glove_emb = other_emb(alive_df, dead_df, patient_node_0, patient_node_1)
+# word2vec_emb, fasttext_emb, glove_emb = other_emb(alive_df, dead_df, patient_node_0, patient_node_1)
 sequence2vec = sequence2vec(patient_node_0, patient_node_1, normalized_cooc_odd_scores)
-sequence2vec_notWeighted = functions.sequence2vec(patient_node_0, patient_node_1, normalized_cooc_odd_scores, weighted=False)
+# sequence2vec_notWeighted = functions.sequence2vec(patient_node_0, patient_node_1, normalized_cooc_odd_scores, weighted=False)
 
 # print(f"word2vec_emb of cmo:\n {word2vec_emb['cmo']}")
 # print(f"fasttext_emb of cmo:\n {fasttext_emb['cmo']}")
@@ -98,37 +136,46 @@ graphs, graph_labels, train_index, test_index = create_graphs_lists(patient_cooc
 # Step 9
 # Train model
 logger.info("Train model...")
-test_accs = train_model(graphs, graph_labels, train_index, test_index, "seq2vec", disease_name)
+test_accs, test_f1_score, test_precision, test_recall = train_model(graphs, graph_labels, train_index, test_index, "seq2vec", disease_name)
 logger.info(f"Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
+logger.info(f"F1_socre over all folds mean: {np.mean(test_f1_score)*100:.3}% and std: {np.std(test_f1_score)*100:.2}%")
+logger.info(f"Precision over all folds mean: {np.mean(test_precision)*100:.3}% and std: {np.std(test_precision)*100:.2}%")
+logger.info(f"Recall over all folds mean: {np.mean(test_recall)*100:.3}% and std: {np.std(test_recall)*100:.2}%")
+"""
+2020-12-03 14:56:44,890 - Accuracy over all folds mean: 79.7% and std: 2.3%
+2020-12-03 14:56:44,890 - F1_socre over all folds mean: 83.0% and std: 1.6%
+2020-12-03 14:56:44,891 - Precision over all folds mean: 71.4% and std: 2.3%
+2020-12-03 14:56:44,891 - Recall over all folds mean: 99.5% and std: 1.3%
+"""
 
-"""Train other embeddings"""
-logger.info("Train other embeddings sequence2vec_notWeighted...")
-logger.info("Create graphs, graph labels, train and test data...")
-graphs, graph_labels, train_index, test_index = create_graphs_lists(patient_cooc_0, patient_cooc_1, normalized_cooc_odd_scores, sequence2vec_notWeighted)
-logger.info("Train model...")
-test_accs = train_model(graphs, graph_labels, train_index, test_index, "sequence2vec_notWeighted", disease_name)
-logger.info(f"sequence2vec_notWeighted Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
+# """Train other embeddings"""
+# logger.info("Train other embeddings sequence2vec_notWeighted...")
+# logger.info("Create graphs, graph labels, train and test data...")
+# graphs, graph_labels, train_index, test_index = create_graphs_lists(patient_cooc_0, patient_cooc_1, normalized_cooc_odd_scores, sequence2vec_notWeighted)
+# logger.info("Train model...")
+# test_accs = train_model(graphs, graph_labels, train_index, test_index, "sequence2vec_notWeighted", disease_name)
+# logger.info(f"sequence2vec_notWeighted Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
 
-logger.info("Train other embeddings word2vec_emb...")
-logger.info("Create graphs, graph labels, train and test data...")
-graphs, graph_labels, train_index, test_index = create_graphs_lists(patient_cooc_0, patient_cooc_1, normalized_cooc_odd_scores, word2vec_emb)
-logger.info("Train model...")
-test_accs = train_model(graphs, graph_labels, train_index, test_index, "word2vec", disease_name)
-logger.info(f"word2vec_emb Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
+# logger.info("Train other embeddings word2vec_emb...")
+# logger.info("Create graphs, graph labels, train and test data...")
+# graphs, graph_labels, train_index, test_index = create_graphs_lists(patient_cooc_0, patient_cooc_1, normalized_cooc_odd_scores, word2vec_emb)
+# logger.info("Train model...")
+# test_accs = train_model(graphs, graph_labels, train_index, test_index, "word2vec", disease_name)
+# logger.info(f"word2vec_emb Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
 
-logger.info("Train other embeddings fasttext_emb...")
-logger.info("Create graphs, graph labels, train and test data...")
-graphs, graph_labels, train_index, test_index = create_graphs_lists(patient_cooc_0, patient_cooc_1, normalized_cooc_odd_scores, fasttext_emb)
-logger.info("Train model...")
-test_accs = train_model(graphs, graph_labels, train_index, test_index, "fasttext", disease_name)
-logger.info(f"fasttext_emb Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
+# logger.info("Train other embeddings fasttext_emb...")
+# logger.info("Create graphs, graph labels, train and test data...")
+# graphs, graph_labels, train_index, test_index = create_graphs_lists(patient_cooc_0, patient_cooc_1, normalized_cooc_odd_scores, fasttext_emb)
+# logger.info("Train model...")
+# test_accs = train_model(graphs, graph_labels, train_index, test_index, "fasttext", disease_name)
+# logger.info(f"fasttext_emb Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
 
-logger.info("Train other embeddings glove_emb...")
-logger.info("Create graphs, graph labels, train and test data...")
-graphs, graph_labels, train_index, test_index = create_graphs_lists(patient_cooc_0, patient_cooc_1, normalized_cooc_odd_scores, glove_emb)
-logger.info("Train model...")
-test_accs = train_model(graphs, graph_labels, train_index, test_index, "glove", disease_name)
-logger.info(f"glove_emb Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
+# logger.info("Train other embeddings glove_emb...")
+# logger.info("Create graphs, graph labels, train and test data...")
+# graphs, graph_labels, train_index, test_index = create_graphs_lists(patient_cooc_0, patient_cooc_1, normalized_cooc_odd_scores, glove_emb)
+# logger.info("Train model...")
+# test_accs = train_model(graphs, graph_labels, train_index, test_index, "glove", disease_name)
+# logger.info(f"glove_emb Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
 
 # # plt.figure(figsize=(8, 6))
 # # plt.hist(test_accs)

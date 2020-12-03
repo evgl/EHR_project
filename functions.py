@@ -35,6 +35,8 @@ from tensorflow.keras.callbacks import EarlyStopping
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
+from tensorflow.keras import backend as K
+
 from glove import Corpus, Glove
 
 
@@ -708,10 +710,10 @@ def create_graphs_lists(patient_cooc_0, patient_cooc_1, normalized_cooc_odd_scor
 
 def train_model(graphs, graph_labels, train_index, test_index, model_name, disease_name):
     # Save model path --------------->
-    # save_model_path = os.path.join("data/models/", disease_name)
-    # # Create a path to save the model
-    # create_model_path = os.path.join(save_model_path, model_name)
-    # Path(create_model_path).mkdir(parents=True, exist_ok=True)
+    save_model_path = os.path.join("data/models/", disease_name)
+    # Create a path to save the model
+    create_model_path = os.path.join(save_model_path, model_name)
+    Path(create_model_path).mkdir(parents=True, exist_ok=True)
     # Save model path ---------------<
 
     # Initialize generator
@@ -721,6 +723,25 @@ def train_model(graphs, graph_labels, train_index, test_index, model_name, disea
     es = EarlyStopping(
         monitor="val_loss", min_delta=0, patience=25, restore_best_weights=True
     )
+
+    # precision_recall ------->
+    def recall_m(y_true, y_pred):
+        true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+        possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
+        recall = true_positives / (possible_positives + K.epsilon())
+        return recall
+
+    def precision_m(y_true, y_pred):
+        true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+        predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
+        precision = true_positives / (predicted_positives + K.epsilon())
+        return precision
+
+    def f1_m(y_true, y_pred):
+        precision = precision_m(y_true, y_pred)
+        recall = recall_m(y_true, y_pred)
+        return 2*((precision*recall)/(precision+recall+K.epsilon()))
+    # precision_recall -------<
 
     def _create_graph_classification_model(generator):
         gc_model = GCNSupervisedGraphClassification(
@@ -736,7 +757,8 @@ def train_model(graphs, graph_labels, train_index, test_index, model_name, disea
 
         # Let's create the Keras model and prepare it for training
         model = Model(inputs=x_inp, outputs=predictions)
-        model.compile(optimizer=Adam(0.005), loss=binary_crossentropy, metrics=["acc"])
+        # model.compile(optimizer=Adam(0.005), loss=binary_crossentropy, metrics=["acc"])
+        model.compile(optimizer=Adam(0.005), loss=binary_crossentropy, metrics=["acc", f1_m, precision_m, recall_m])
 
         return model
 
@@ -749,12 +771,21 @@ def train_model(graphs, graph_labels, train_index, test_index, model_name, disea
         )
         # calculate performance on the test data and return along with history
         test_metrics = model.evaluate(test_gen, verbose=0)
+        loss, accuracy, f1_score, precision, recall = test_metrics
+        print(test_metrics)
+        # [0.3942970931529999, 0.7954545617103577]
+        # [0.3395552337169647, 0.8181818127632141, 0.8459383845329285, 0.7362573146820068, 1.0]
         test_acc = test_metrics[model.metrics_names.index("acc")]
+        print(test_acc)
+        # 0.7954545617103577
+
         # # save model / If want to say each model
         # save_model_name = model_name  + "_" + str(fold) + ".h5"
         # fold_model_path = os.path.join(save_model_path, model_name, save_model_name)
         # model.save(fold_model_path)
-        return test_acc
+
+        # return test_acc
+        return accuracy, f1_score, precision, recall
 
     # To train in folds
     def _get_generators(train_index, test_index, graph_labels, batch_size):
@@ -783,6 +814,9 @@ def train_model(graphs, graph_labels, train_index, test_index, model_name, disea
 
     # To train 50 folds
     test_accs = []
+    test_f1_score = []
+    test_precision = []
+    test_recall = []
 
     for i in range(50):
         fold = i + 1
@@ -793,10 +827,16 @@ def train_model(graphs, graph_labels, train_index, test_index, model_name, disea
         )
 
         model = _create_graph_classification_model(generator)
-        acc  = _train_fold(model, train_gen, test_gen, es, epochs, fold)
-        test_accs.append(acc)
-        # # Save model accuracy of each fold
-        # model_accuracies_file = model_name + ".txt"
-        # with open(os.path.join(save_model_path, model_accuracies_file), 'w') as f:
-        #     f.write(json.dumps(test_accs))
-    return test_accs
+        accuracy, f1_score, precision, recall  = _train_fold(model, train_gen, test_gen, es, epochs, fold)
+
+        test_accs.append(accuracy)
+        test_f1_score.append(f1_score)
+        test_precision.append(precision)
+        test_recall.append(recall)
+
+        # Save model accuracy of each fold
+        model_accuracies_file = model_name + ".txt"
+        with open(os.path.join(save_model_path, model_accuracies_file), 'w') as f:
+            f.write(json.dumps(test_accs))
+            
+    return test_accs, test_f1_score, test_precision, test_recall

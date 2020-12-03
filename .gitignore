@@ -19,3 +19,7 @@ glove.6B/6B.100.dat/meta/storage
 .ipynb_checkpoints/other_embeddings-checkpoint.ipynb
 *.pyc
 /data/
+.ipynb_checkpoints/dump_json-checkpoint.ipynb
+dump_json/.ipynb_checkpoints/dump_json-checkpoint.ipynb
+dump_json/dump_json.ipynb
+dump_json.ipynb
