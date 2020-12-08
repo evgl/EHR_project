@@ -23,3 +23,4 @@ glove.6B/6B.100.dat/meta/storage
 dump_json/.ipynb_checkpoints/dump_json-checkpoint.ipynb
 dump_json/dump_json.ipynb
 dump_json.ipynb
+*npy

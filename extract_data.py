@@ -95,6 +95,7 @@ with open(r'patient_cooc_0.txt','r') as f:
          for i in f.readlines():
             dic=i #string
 patient_cooc_0 = eval(dic) # this is orignal dict with instace dict
+
 dic = ''
 with open(r'patient_cooc_1.txt','r') as f:
          for i in f.readlines():
@@ -103,22 +104,19 @@ patient_cooc_1 = eval(dic) # this is orignal dict with instace dict
 
 # # Step 6
 # logger.info("Get and normalize weights in co-occurrences...")
-# normalized_cooc_odd_scores = cooc_log_odd_score(patient_cooc_0, patient_cooc_1, )
-
-# with open(r'normalized_cooc_odd_scores.txt','w+') as f:
-#    f.write(str(normalized_cooc_odd_scores))
-
-dic = ''
-with open(r'normalized_cooc_odd_scores.txt','r') as f:
-         for i in f.readlines():
-            dic=i #string
-normalized_cooc_odd_scores = eval(dic) # this is orignal dict with instace dict
+normalized_cooc_odd_scores = cooc_log_odd_score(patient_cooc_0, patient_cooc_1, )
 
 # Step 7
 logger.info("Train embeddings...")
 # word2vec_emb, fasttext_emb, glove_emb = other_emb(alive_df, dead_df, patient_node_0, patient_node_1)
-sequence2vec = sequence2vec(patient_node_0, patient_node_1, normalized_cooc_odd_scores)
+# sequence2vec = sequence2vec(patient_node_0, patient_node_1, normalized_cooc_odd_scores)
 # sequence2vec_notWeighted = functions.sequence2vec(patient_node_0, patient_node_1, normalized_cooc_odd_scores, weighted=False)
+
+# # Save dic with val of nparrays into npy 
+# np.save('sequence2vec.npy',sequence2vec)
+
+# Load npy file
+sequence2vec = np.load('sequence2vec.npy', allow_pickle=True)
 
 # print(f"word2vec_emb of cmo:\n {word2vec_emb['cmo']}")
 # print(f"fasttext_emb of cmo:\n {fasttext_emb['cmo']}")
@@ -136,11 +134,12 @@ graphs, graph_labels, train_index, test_index = create_graphs_lists(patient_cooc
 # Step 9
 # Train model
 logger.info("Train model...")
-test_accs, test_f1_score, test_precision, test_recall = train_model(graphs, graph_labels, train_index, test_index, "seq2vec", disease_name)
+test_accs, test_f1_score, test_precision, test_recall, test_auc = train_model(graphs, graph_labels, train_index, test_index, "seq2vec", disease_name)
 logger.info(f"Accuracy over all folds mean: {np.mean(test_accs)*100:.3}% and std: {np.std(test_accs)*100:.2}%")
 logger.info(f"F1_socre over all folds mean: {np.mean(test_f1_score)*100:.3}% and std: {np.std(test_f1_score)*100:.2}%")
 logger.info(f"Precision over all folds mean: {np.mean(test_precision)*100:.3}% and std: {np.std(test_precision)*100:.2}%")
 logger.info(f"Recall over all folds mean: {np.mean(test_recall)*100:.3}% and std: {np.std(test_recall)*100:.2}%")
+logger.info(f"AUC over all folds mean: {np.mean(test_auc)*100:.3}% and std: {np.std(test_auc)*100:.2}%")
 """
 2020-12-03 14:56:44,890 - Accuracy over all folds mean: 79.7% and std: 2.3%
 2020-12-03 14:56:44,890 - F1_socre over all folds mean: 83.0% and std: 1.6%
