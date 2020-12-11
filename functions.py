@@ -732,6 +732,8 @@ def train_model(graphs, graph_labels, train_index, test_index, model_name, disea
     )
 
     # precision_recall ------->
+    # Embedded libraries for count
+    # https://www.tensorflow.org/tutorials/structured_data/imbalanced_data
     def recall_m(y_true, y_pred):
         true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
         possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
@@ -774,6 +776,8 @@ def train_model(graphs, graph_labels, train_index, test_index, model_name, disea
 
     # To train in folds
     def _train_fold(model, train_gen, test_gen, es, epochs, fold):
+        
+        # # Train and save models  for each fold ----->
         # model.fit(
         #     train_gen, epochs=epochs, validation_data=test_gen, verbose=0, callbacks=[es],
         # )
@@ -783,8 +787,11 @@ def train_model(graphs, graph_labels, train_index, test_index, model_name, disea
         fold_model_path = os.path.join(save_model_path, model_name, save_model_name)
         # model.save(fold_model_path)
 
+        # To load saved models
         print(f"fold_model_path: {fold_model_path}")
         model.load_weights(fold_model_path)
+
+        # Train and save models  for each fold -----<
 
         # calculate performance on the test data and return along with history
         test_metrics = model.evaluate(test_gen, verbose=0)
@@ -845,10 +852,31 @@ def train_model(graphs, graph_labels, train_index, test_index, model_name, disea
         test_precision.append(precision)
         test_recall.append(recall)
         test_auc.append(auc)
+    # # Save metrics ------------------->
+    # # Save model accuracy of each fold
+    # model_accuracies_file = model_name + "_acc.txt"
+    # with open(os.path.join(save_model_path, model_accuracies_file), 'w') as f:
+    #     f.write(json.dumps(test_accs))
 
-        # Save model accuracy of each fold
-        model_accuracies_file = model_name + ".txt"
-        with open(os.path.join(save_model_path, model_accuracies_file), 'w') as f:
-            f.write(json.dumps(test_accs))
+    # # Save model f1_score of each fold
+    # model_f1_score_file = model_name + "_f1_score.txt"
+    # with open(os.path.join(save_model_path, model_f1_score_file), 'w') as f:
+    #     f.write(json.dumps(test_f1_score))
+
+    # # Save model precision of each fold
+    # model_precision_file = model_name + "_precision.txt"
+    # with open(os.path.join(save_model_path, model_precision_file), 'w') as f:
+    #     f.write(json.dumps(test_precision))
+
+    # # Save model recall of each fold
+    # model_recall_file = model_name + "_recall.txt"
+    # with open(os.path.join(save_model_path, model_recall_file), 'w') as f:
+    #     f.write(json.dumps(test_recall))
+
+    # # Save model auc of each fold
+    # model_auc_file = model_name + "_auc.txt"
+    # with open(os.path.join(save_model_path, model_auc_file), 'w') as f:
+    #     f.write(json.dumps(test_auc))
+    # # Save metrics -------------------<
             
     return test_accs, test_f1_score, test_precision, test_recall, test_auc

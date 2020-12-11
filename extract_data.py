@@ -141,10 +141,11 @@ logger.info(f"Precision over all folds mean: {np.mean(test_precision)*100:.3}% a
 logger.info(f"Recall over all folds mean: {np.mean(test_recall)*100:.3}% and std: {np.std(test_recall)*100:.2}%")
 logger.info(f"AUC over all folds mean: {np.mean(test_auc)*100:.3}% and std: {np.std(test_auc)*100:.2}%")
 """
-2020-12-03 14:56:44,890 - Accuracy over all folds mean: 79.7% and std: 2.3%
-2020-12-03 14:56:44,890 - F1_socre over all folds mean: 83.0% and std: 1.6%
-2020-12-03 14:56:44,891 - Precision over all folds mean: 71.4% and std: 2.3%
-2020-12-03 14:56:44,891 - Recall over all folds mean: 99.5% and std: 1.3%
+2020-12-10 14:28:52,504 - Accuracy over all folds mean: 79.0% and std: 2.2%
+2020-12-10 14:28:52,505 - F1_socre over all folds mean: 82.5% and std: 1.5%
+2020-12-10 14:28:52,505 - Precision over all folds mean: 70.8% and std: 2.4%
+2020-12-10 14:28:52,505 - Recall over all folds mean: 99.4% and std: 1.8%
+2020-12-10 14:28:52,505 - AUC over all folds mean: 94.7% and std: 1.7%
 """
 
 # """Train other embeddings"""
