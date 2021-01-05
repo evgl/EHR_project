@@ -24,3 +24,11 @@ dump_json/.ipynb_checkpoints/dump_json-checkpoint.ipynb
 dump_json/dump_json.ipynb
 dump_json.ipynb
 *npy
+.ipynb_checkpoints/other_graph_embeddings-checkpoint.ipynb
+.ipynb_checkpoints/read_csv_half_randomWalk-weighted_graph_walk-minsup0.15-checkpoint.ipynb
+.ipynb_checkpoints/other_classificatio_algos-checkpoint.ipynb
+.ipynb_checkpoints/sent_analysis_scikit-learn-checkpoint.ipynb
+__pycache__/functions.cpython-36.pyc
+__pycache__/functions.cpython-37.pyc
+other_classificatio_algos.ipynb
+sent_analysis_scikit-learn.ipynb

@@ -1,0 +1,80 @@
+
+logger.info("Train model...")
+"""PNEUMONIA
+2020-12-10 14:28:52,504 - Accuracy over all folds mean: 79.0% and std: 2.2%
+2020-12-10 14:28:52,505 - F1_socre over all folds mean: 82.5% and std: 1.5%
+2020-12-10 14:28:52,505 - Precision over all folds mean: 70.8% and std: 2.4%
+2020-12-10 14:28:52,505 - Recall over all folds mean: 99.4% and std: 1.8%
+2020-12-10 14:28:52,505 - AUC over all folds mean: 94.7% and std: 1.7%
+"""
+"""SEPSIS
+2021-01-04 17:47:27,307 - Accuracy over all folds mean: 82.6% and std: 2.6%
+2021-01-04 17:47:27,308 - F1_socre over all folds mean: 84.0% and std: 4.2%
+2021-01-04 17:47:27,308 - Precision over all folds mean: 73.7% and std: 5.1%
+2021-01-04 17:47:27,308 - Recall over all folds mean: 98.4% and std: 4.5%
+2021-01-04 17:47:27,308 - AUC over all folds mean: 94.1% and std: 1.2%
+"""
+
+logger.info("Train other embeddings sequence2vec_notWeighted...")
+"""PNEUMONIA
+2020-12-23 15:58:54,575 - sequence2vec_notWeighted Accuracy over all folds mean: 78.4% and std: 4.1%
+2020-12-23 15:58:54,575 - sequence2vec_notWeighted F1_socre over all folds mean: 82.0% and std: 2.6%
+2020-12-23 15:58:54,575 - sequence2vec_notWeighted Precision over all folds mean: 71.3% and std: 4.4%
+2020-12-23 15:58:54,576 - sequence2vec_notWeighted Recall over all folds mean: 97.7% and std: 4.0%
+2020-12-23 15:58:54,576 - sequence2vec_notWeighted AUC over all folds mean: 93.0% and std: 1.5%
+"""
+"""SEPSIS
+2021-01-04 17:58:29,885 - sequence2vec_notWeighted Accuracy over all folds mean: 80.9% and std: 4.8%
+2021-01-04 17:58:29,886 - sequence2vec_notWeighted F1_socre over all folds mean: 78.5% and std: 5.6%
+2021-01-04 17:58:29,886 - sequence2vec_notWeighted Precision over all folds mean: 70.6% and std: 7.4%
+2021-01-04 17:58:29,886 - sequence2vec_notWeighted Recall over all folds mean: 90.9% and std: 8.9%
+2021-01-04 17:58:29,887 - sequence2vec_notWeighted AUC over all folds mean: 93.3% and std: 1.2%
+"""
+
+logger.info("Train other embeddings word2vec_emb...")
+"""PNEUMONIA
+2020-12-23 16:11:33,875 - word2vec_emb Accuracy over all folds mean: 57.7% and std: 8.6%
+2020-12-23 16:11:33,875 - word2vec_emb F1_socre over all folds mean: 70.2% and std: 4.1%
+2020-12-23 16:11:33,875 - word2vec_emb Precision over all folds mean: 55.1% and std: 6.0%
+2020-12-23 16:11:33,875 - word2vec_emb Recall over all folds mean: 98.2% and std: 3.2%
+2020-12-23 16:11:33,876 - word2vec_emb AUC over all folds mean: 89.0% and std: 2.7%
+"""
+"""SEPSIS
+2021-01-04 18:10:23,649 - word2vec_emb Accuracy over all folds mean: 77.2% and std: 4.7%
+2021-01-04 18:10:23,649 - word2vec_emb F1_socre over all folds mean: 74.1% and std: 6.3%
+2021-01-04 18:10:23,649 - word2vec_emb Precision over all folds mean: 65.6% and std: 6.5%
+2021-01-04 18:10:23,650 - word2vec_emb Recall over all folds mean: 87.7% and std: 1e+01%
+2021-01-04 18:10:23,650 - word2vec_emb AUC over all folds mean: 90.3% and std: 2.2%
+"""
+
+logger.info("Train other embeddings fasttext_emb...")
+"""PNEUMONIA
+2020-12-23 16:24:29,499 - fasttext_emb Accuracy over all folds mean: 58.3% and std: 8.9%
+2020-12-23 16:24:29,499 - fasttext_emb F1_socre over all folds mean: 70.5% and std: 4.4%
+2020-12-23 16:24:29,499 - fasttext_emb Precision over all folds mean: 55.5% and std: 6.1%
+2020-12-23 16:24:29,500 - fasttext_emb Recall over all folds mean: 98.3% and std: 2.6%
+2020-12-23 16:24:29,500 - fasttext_emb AUC over all folds mean: 89.0% and std: 2.7%
+"""
+"""SEPSIS
+2021-01-04 18:21:48,876 - fasttext_emb Accuracy over all folds mean: 70.2% and std: 7.6%
+2021-01-04 18:21:48,876 - fasttext_emb F1_socre over all folds mean: 69.2% and std: 5.5%
+2021-01-04 18:21:48,877 - fasttext_emb Precision over all folds mean: 58.2% and std: 7.1%
+2021-01-04 18:21:48,877 - fasttext_emb Recall over all folds mean: 89.1% and std: 9.4%
+2021-01-04 18:21:48,877 - fasttext_emb AUC over all folds mean: 90.3% and std: 1.9%
+"""
+
+logger.info("Train other embeddings glove_emb...")
+"""PNEUMONIA
+2020-12-23 16:39:19,289 - glove_emb Accuracy over all folds mean: 70.2% and std: 8.0%
+2020-12-23 16:39:19,289 - glove_emb F1_socre over all folds mean: 75.8% and std: 4.1%
+2020-12-23 16:39:19,289 - glove_emb Precision over all folds mean: 64.5% and std: 6.1%
+2020-12-23 16:39:19,289 - glove_emb Recall over all folds mean: 93.1% and std: 3.6%
+2020-12-23 16:39:19,289 - glove_emb AUC over all folds mean: 86.7% and std: 1.4%
+"""
+"""SEPSIS
+2021-01-04 18:32:57,542 - glove_emb Accuracy over all folds mean: 76.9% and std: 6.1%
+2021-01-04 18:32:57,549 - glove_emb F1_socre over all folds mean: 69.2% and std: 4.8%
+2021-01-04 18:32:57,550 - glove_emb Precision over all folds mean: 61.9% and std: 6.0%
+2021-01-04 18:32:57,550 - glove_emb Recall over all folds mean: 80.7% and std: 7.6%
+2021-01-04 18:32:57,550 - glove_emb AUC over all folds mean: 84.7% and std: 3.1%
+"""
