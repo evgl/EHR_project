@@ -432,7 +432,7 @@ def cooc_log_odd_score(patient_cooc_0, patient_cooc_1):
     cooc_keys, cooc_values = zip(*patient_cooc_odd_scores.items())
     normalized_cooc_odd_scores = dict(zip(cooc_keys, norm_arr(cooc_values)))
 
-    return normalized_cooc_odd_scores
+    return patient_cooc_set, normalized_cooc_odd_scores
 
 """ Embeddings: Seq2Vec, Seq2Vec not weighted, Word2Vec, FastText, GloVe
 """
@@ -611,6 +611,46 @@ def other_emb (alive_df, dead_df, patient_node_0, patient_node_1):
 """ Embeddings: Seq2Vec, Word2Vec, FastText, GloVe
     -- End --
 """
+def create_graph(patient_cooc_dict, cooc_odd_scores, node_emb_dict):
+    source = []
+    target = []
+    edge_weight = []
+    node_idx = []
+
+    for cooc in patient_cooc_dict:
+        source.extend([cooc[0], cooc[1]])
+        target.extend([cooc[1], cooc[0]])
+        # edge_weight.extend([cooc_odd_scores[cooc], cooc_odd_scores[cooc]])
+        edge_weight.extend([0.0, 0.0])
+        
+    node_idx = list(set(source + target))
+    
+    # Create a dataframe of only nodes
+    square_node_data = pd.DataFrame(
+        index=node_idx)
+        
+    # Create a dictionary for each column for a vector
+    node_features = defaultdict(list)
+    for node in node_idx:
+        # Case 1: Use in defaul embeddings training 
+        # for i, vec in enumerate(node_emb_dict[node]):
+        # Case 2: Use when load npy file
+        for i, vec in enumerate(node_emb_dict[()][node]):
+            node_features['w_' + str(i)].append(vec)
+        
+    # Add columns to a dataframe
+    for k, v in node_features.items():
+              
+        square_node_data[k] = v
+
+    square_edges = pd.DataFrame({ 
+        "source": source, 
+        "target": target, 
+        "weight":edge_weight
+    })
+        
+    square = StellarGraph({"corner": square_node_data}, {"line": square_edges})
+    return square
 
 # Train model
 # Load data
@@ -691,18 +731,18 @@ def create_graphs_lists(patient_cooc_0, patient_cooc_1, normalized_cooc_odd_scor
         else:
             train_arr.append(i)
 
-    # Shuffle test_arr elements randomly
-    import random
-    seed = 42
-    # Put elements of test arr into c and shuffle
-    c = list(test_arr)
-    random.Random(seed).shuffle(c)
-    test_arr =  c
+    # # Shuffle test_arr elements randomly
+    # import random
+    # seed = 42
+    # # Put elements of test arr into c and shuffle
+    # c = list(test_arr)
+    # random.Random(seed).shuffle(c)
+    # test_arr =  c
 
-    # Put elements of train arr in c and shuffle
-    c = list(train_arr)
-    random.Random(seed).shuffle(c)
-    train_arr =  c
+    # # Put elements of train arr in c and shuffle
+    # c = list(train_arr)
+    # random.Random(seed).shuffle(c)
+    # train_arr =  c
 
     # Shuffled train and test arrays
     train_index = np.array(train_arr)
@@ -719,9 +759,9 @@ def train_model(graphs, graph_labels, train_index, test_index, model_name, disea
     
     # Save model path --------------->
     save_model_path = os.path.join("data/models/", disease_name)
-    # Create a path to save the model
-    create_model_path = os.path.join(save_model_path, model_name)
-    Path(create_model_path).mkdir(parents=True, exist_ok=True)
+    # # Create a path to save the model
+    # create_model_path = os.path.join(save_model_path, model_name)
+    # Path(create_model_path).mkdir(parents=True, exist_ok=True)
     # Save model path ---------------<
 
     # Initialize generator
@@ -778,19 +818,19 @@ def train_model(graphs, graph_labels, train_index, test_index, model_name, disea
     # To train in folds
     def _train_fold(model, train_gen, test_gen, es, epochs, fold):
         
-        # Train and save models  for each fold ----->
-        model.fit(
-            train_gen, epochs=epochs, validation_data=test_gen, verbose=0, callbacks=[es],
-        )
+        # # Train and save models  for each fold ----->
+        # model.fit(
+        #     train_gen, epochs=epochs, validation_data=test_gen, verbose=0, callbacks=[es],
+        # )
 
         # # save model / If want to save each model
         save_model_name = model_name  + "_" + str(fold) + ".h5"
         fold_model_path = os.path.join(save_model_path, model_name, save_model_name)
-        model.save(fold_model_path)
+        # model.save(fold_model_path)
 
-        # # To load saved models
+        # To load saved models
         # print(f"fold_model_path: {fold_model_path}")
-        # model.load_weights(fold_model_path)
+        model.load_weights(fold_model_path)
 
         # Train and save models  for each fold -----<
 
@@ -829,7 +869,7 @@ def train_model(graphs, graph_labels, train_index, test_index, model_name, disea
     #         # Visible devices must be set before GPUs have been initialized
     #         logger.info(e)
 
-
+    """
     # To train 50 folds
     test_accs = []
     test_f1_score = []
@@ -853,34 +893,48 @@ def train_model(graphs, graph_labels, train_index, test_index, model_name, disea
         test_precision.append(precision)
         test_recall.append(recall)
         test_auc.append(auc)
-    # Save metrics ------------------->
-    # Save model accuracy of each fold
-    model_accuracies_file = model_name + "_acc.txt"
-    with open(os.path.join(save_model_path, model_accuracies_file), 'w') as f:
-        f.write(json.dumps(test_accs))
+    """
+    # Remove one co-occurrence and count their influence on the data set ---->
+    fold = 1
+    
+    train_gen, test_gen = _get_generators(
+        train_index, test_index, graph_labels, batch_size=30
+    )
 
-    # Save model f1_score of each fold
-    model_f1_score_file = model_name + "_f1_score.txt"
-    with open(os.path.join(save_model_path, model_f1_score_file), 'w') as f:
-        f.write(json.dumps(test_f1_score))
+    model = _create_graph_classification_model(generator)
+    accuracy, f1_score, precision, recall, auc  = _train_fold(model, train_gen, test_gen, es, epochs, fold)
 
-    # Save model precision of each fold
-    model_precision_file = model_name + "_precision.txt"
-    with open(os.path.join(save_model_path, model_precision_file), 'w') as f:
-        f.write(json.dumps(test_precision))
+    return accuracy, f1_score, precision, recall, auc
+    # Remove one co-occurrence and count their influence on the data set ----<
 
-    # Save model recall of each fold
-    model_recall_file = model_name + "_recall.txt"
-    with open(os.path.join(save_model_path, model_recall_file), 'w') as f:
-        f.write(json.dumps(test_recall))
+    # # Save metrics ------------------->
+    # # Save model accuracy of each fold
+    # model_accuracies_file = model_name + "_acc.txt"
+    # with open(os.path.join(save_model_path, model_accuracies_file), 'w') as f:
+    #     f.write(json.dumps(test_accs))
 
-    # Save model auc of each fold
-    model_auc_file = model_name + "_auc.txt"
-    with open(os.path.join(save_model_path, model_auc_file), 'w') as f:
-        f.write(json.dumps(test_auc))
-    # Save metrics -------------------<
+    # # Save model f1_score of each fold
+    # model_f1_score_file = model_name + "_f1_score.txt"
+    # with open(os.path.join(save_model_path, model_f1_score_file), 'w') as f:
+    #     f.write(json.dumps(test_f1_score))
+
+    # # Save model precision of each fold
+    # model_precision_file = model_name + "_precision.txt"
+    # with open(os.path.join(save_model_path, model_precision_file), 'w') as f:
+    #     f.write(json.dumps(test_precision))
+
+    # # Save model recall of each fold
+    # model_recall_file = model_name + "_recall.txt"
+    # with open(os.path.join(save_model_path, model_recall_file), 'w') as f:
+    #     f.write(json.dumps(test_recall))
+
+    # # Save model auc of each fold
+    # model_auc_file = model_name + "_auc.txt"
+    # with open(os.path.join(save_model_path, model_auc_file), 'w') as f:
+    #     f.write(json.dumps(test_auc))
+    # # Save metrics -------------------<
             
-    return test_accs, test_f1_score, test_precision, test_recall, test_auc
+    # return test_accs, test_f1_score, test_precision, test_recall, test_auc
 
 def plot_roc(name, labels, predictions, **kwargs):
   fp, tp, _ = sklearn.metrics.roc_curve(labels, predictions)

@@ -32,3 +32,5 @@ __pycache__/functions.cpython-36.pyc
 __pycache__/functions.cpython-37.pyc
 other_classificatio_algos.ipynb
 sent_analysis_scikit-learn.ipynb
+.ipynb_checkpoints/extract_unique_cooc-checkpoint.ipynb
+.ipynb_checkpoints/

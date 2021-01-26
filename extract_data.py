@@ -5,16 +5,18 @@ import json
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import functions
+import copy
 from functions import extract_data, count_notes_per_patient, logger, count_words_per_patient, find_frequent_word, find_cooc_per_patient
 from functions import cooc_log_odd_score, sequence2vec, other_emb
-from functions import create_graphs_lists, train_model
+from functions import create_graphs_lists, train_model, create_graph
 from nltk.stem import PorterStemmer
 from sklearn import model_selection
+from multiprocessing import Pool
 
 # Variables
 
 # Input vars --->
-disease_name = 'CONGESTIVE HEART FAILURE'
+disease_name = 'PNEUMONIA'
 database_path = '../MIMIC-III'
 inputs_path = os.path.join('data/inputs/', disease_name)
 
@@ -66,8 +68,8 @@ logger.info(f"Number of patients in label_1: {alive_df['SUBJECT_ID_x'].nunique()
 # # TODO: Step 2-4 can be merged into one
 
 # # Read json
-with open(os.path.join(inputs_path,'word_dict.json'), 'r') as fp:
-    word_dict = json.load(fp)
+# with open(os.path.join(inputs_path,'word_dict.json'), 'r') as fp:
+#     word_dict = json.load(fp)
 
 
 # # Step 5
@@ -75,13 +77,13 @@ with open(os.path.join(inputs_path,'word_dict.json'), 'r') as fp:
 # patient_node_0, patient_cooc_0, patient_note_num_0 = find_cooc_per_patient(dead_df, word_dict, 0.15)
 # patient_node_1, patient_cooc_1, patient_note_num_1 = find_cooc_per_patient(alive_df, word_dict, 0.15)
 
-# Write json
+# # Write json
 # with open(os.path.join(inputs_path,'patient_node_0.json'), 'w') as fp:
 #     json.dump(patient_node_0, fp)
 # with open(os.path.join(inputs_path,'patient_node_1.json'), 'w') as fp:
 #     json.dump(patient_node_1, fp)
 
-# Because key is a tuple we store it as a string
+# # Because key is a tuple we store it as a string
 # with open(os.path.join(inputs_path,'patient_cooc_0.txt'),'w+') as f:
 #     f.write(str(patient_cooc_0))
 # with open(os.path.join(inputs_path,'patient_cooc_1.txt'),'w+') as f:
@@ -105,9 +107,13 @@ with open(os.path.join(inputs_path,'patient_cooc_1.txt'),'r') as f:
             dic=i #string
 patient_cooc_1 = eval(dic) # this is orignal dict with instace dict
 
+# Clean empty patients taht do not have any co-occurrences
+patient_cooc_0 = {k: v for k, v in patient_cooc_0.items() if bool(v)}
+patient_cooc_1 = {k: v for k, v in patient_cooc_1.items() if bool(v)}
+
 # Step 6
 logger.info("Get and normalize weights in co-occurrences...")
-normalized_cooc_odd_scores = cooc_log_odd_score(patient_cooc_0, patient_cooc_1, )
+patient_cooc_set, normalized_cooc_odd_scores = cooc_log_odd_score(patient_cooc_0, patient_cooc_1, )
 
 # Step 7
 # logger.info("Train embeddings...")
@@ -122,8 +128,8 @@ normalized_cooc_odd_scores = cooc_log_odd_score(patient_cooc_0, patient_cooc_1, 
 # np.save(os.path.join(inputs_path,'glove_emb.npy'), glove_emb)
 # np.save(os.path.join(inputs_path,'sequence2vec_notWeighted.npy'), sequence2vec_notWeighted)
 
-# # # Load npy file
-# sequence2vec = np.load(os.path.join(inputs_path,'sequence2vec.npy'), allow_pickle=True)
+# Load npy file
+sequence2vec = np.load(os.path.join(inputs_path,'sequence2vec.npy'), allow_pickle=True)
 # word2vec_emb = np.load(os.path.join(inputs_path,'word2vec_emb.npy'), allow_pickle=True)
 # fasttext_emb = np.load(os.path.join(inputs_path,'fasttext_emb.npy'), allow_pickle=True)
 # glove_emb = np.load(os.path.join(inputs_path,'glove_emb.npy'), allow_pickle=True)
@@ -136,11 +142,11 @@ normalized_cooc_odd_scores = cooc_log_odd_score(patient_cooc_0, patient_cooc_1, 
 # print(f"sequence2vec_notWeighted of cmo:\n {sequence2vec_notWeighted['cmo']}")
 
 
-# # Step 8
-# # Create graphs, graph labels, train and test data
-# logger.info("Create graphs, graph labels, train and test data...")
-# graphs, graph_labels, train_index, test_index = create_graphs_lists(patient_cooc_0, patient_cooc_1, normalized_cooc_odd_scores, sequence2vec)
-# # -------------------
+# Step 8
+# Create graphs, graph labels, train and test data
+logger.info("Create graphs, graph labels, train and test data...")
+graphs, graph_labels, train_index, test_index = create_graphs_lists(patient_cooc_0, patient_cooc_1, normalized_cooc_odd_scores, sequence2vec)
+# -------------------
 
 # # Step 9
 # # Train model
@@ -305,3 +311,90 @@ normalized_cooc_odd_scores = cooc_log_odd_score(patient_cooc_0, patient_cooc_1, 
 
 # # Different node embeddings
 # # https://github.com/shenweichen/GraphEmbedding
+
+
+# ---------------------------------------
+
+"""
+Method to count change of accurracy depending on removing a co-occurrence
+"""
+# create a new dict with NaN, instead of searched word
+# This dictionary then becomes an input to create a new graph
+def create_nan_patient(p_cooc, search_w):
+    new_dict = {}
+    for cooc in p_cooc:
+        if search_w in cooc[0]:
+            new_dict[('NaN', cooc[1])] = p_cooc[cooc]
+        elif search_w in cooc[1]:
+            new_dict[(cooc[0], 'NaN')] = p_cooc[cooc]
+        else:
+            new_dict[cooc] = p_cooc[cooc]
+    return new_dict
+
+sequence2vec[()]['NaN'] = np.zeros(128)
+sequence2vec[()]['NaN']
+
+all_words_set = set()
+for item in patient_cooc_set:
+    all_words_set.add(item[0])
+    all_words_set.add(item[1])
+
+result_list = []
+# Dead always start from 0
+start_index_alive = len(patient_cooc_0)
+print("Start index for alive:", start_index_alive)
+
+# Create a list of patient's dictionaries
+patient_list_of_dicts = []
+for p in patient_cooc_0.items():
+    patient_list_of_dicts.append(p[1])
+    
+for p in patient_cooc_1.items():
+    patient_list_of_dicts.append(p[1])
+
+new_test_index = np.concatenate((train_index, test_index))
+
+# def remove_one_cooc_checkAcc(set_item):
+for i_cnt, word in enumerate(all_words_set):
+    print("Word to remove:", word)
+    tmp_graphs = copy.deepcopy(graphs)
+    # Number of patients that have this word
+    num_of_patients_0 = 0
+    num_of_patients_1 = 0
+    for p_idx, p_graph in enumerate(graphs):
+        # p_idx: num of a patient in a graphs list
+        # p_graph: graph of that patient
+        if word in p_graph.nodes():
+            if p_idx <= 161:
+                num_of_patients_0 += 1
+            else:
+                num_of_patients_1 += 1
+            patient_nan_dict = create_nan_patient(patient_list_of_dicts[p_idx], word)
+            patient_nan_graph = create_graph(patient_nan_dict,normalized_cooc_odd_scores, sequence2vec)
+            tmp_graphs[p_idx] = patient_nan_graph
+
+    print(f"Train model...iter: {i_cnt} out of {len(all_words_set)}")
+    test_accs, test_f1_score, test_precision, test_recall, test_auc = train_model(tmp_graphs, graph_labels, train_index, new_test_index, "seq2vec", disease_name)
+
+    accs = np.mean(test_accs)*100
+    accs_std = np.std(test_accs)*100
+    f1_score = np.mean(test_f1_score)*100
+    f1_score_std = np.std(test_f1_score)*100
+    precision = np.mean(test_precision)*100
+    precision_std = np.std(test_precision)*100
+    recall = np.mean(test_recall)*100
+    recall_std = np.std(test_recall)*100
+    auc = np.mean(test_auc)*100
+    auc_std = np.std(test_auc)*100
+    print(f"Word {word}, number of patients that has the word: num_of_patients_0: {num_of_patients_0}, num_of_patients_1: {num_of_patients_1}")
+    print(f"test_accs: {accs}, test_f1_score: {f1_score}, test_precision: {precision}, test_recall: {recall}, test_auc: {auc}")
+    result_list.append([word, num_of_patients_0, num_of_patients_1, accs, f1_score, precision, recall, auc])
+    # return [set_item, set_item_cnt_0, set_item_cnt_1, accs, f1_score, precision, recall, auc]
+
+logger.info(f"Start the loop for set_item...{disease_name}")
+with open(os.path.join(inputs_path,'remove_cooc_result_list.json'), 'w') as fp:
+    json.dump(result_list, fp)
+
+
+
+
