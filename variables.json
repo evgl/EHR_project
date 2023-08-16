@@ -1,5 +1,0 @@
-{
-    "disease_df":["ROW_ID_x", "SUBJECT_ID_x", "CHARTDATE", "TEXT", "CATEGORY", "DEATHTIME"],
-    "order_df":["SUBJECT_ID_x","CHARTDATE", "ROW_ID_x"],
-    "d_df":["SUBJECT_ID_x", "TEXT"]
-}
